@@ -3,10 +3,10 @@
 		"port": "2016"
 	},
 	"theme": {
-		"pathHTML": "./",
-		"pathJS": "./js/",
-		"pathCSS": "./css/",
-		"pathImages": "./images/",
+		"pathHTML": "./src/",
+		"pathJS": "./src/src/js/",
+		"pathCSS": "./src/css/",
+		"pathImages": "./src/images/",
 		"arrFile": ["style.css"]
 	},
 	"build": {
