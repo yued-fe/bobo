@@ -1,5 +1,5 @@
 {
-  "name": "bobo",
+  "name": "yued-bobo",
   "version": "1.0.0",
   "description": "静态活动发布辅助工具",
   "main": "publish.js",
