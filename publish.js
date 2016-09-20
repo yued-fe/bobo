@@ -421,5 +421,5 @@ if (storeStatic.length) {
 	}
 } else {
 	// 如果没有外联的js, css
-
+	funHTMLbuild();
 }
