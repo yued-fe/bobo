@@ -227,15 +227,18 @@ var funFileIsChanged = function() {
 				        throw err;
 				    }
 
-				    console.log(filename + ': css/js文件名替换中...');
+				    if (storeStatic.length) {
+				    	console.log(filename + ': css/js文件名替换中...');
 
-				    storeStatic.forEach(function(obj) {
-			    		var replacedFilename = obj.filename.replace(/\.(js|css)$/, function(matchs, $1) {
-				    		return '.' + obj.version + '.' + $1;
-				    	});
-				    	data = data.replace('/' + obj.filename, '/' + replacedFilename);
-				    	console.log(obj.filename + '替换成了' + replacedFilename);
-				    });
+					    storeStatic.forEach(function(obj) {
+				    		var replacedFilename = obj.filename.replace(/\.(js|css)$/, function(matchs, $1) {
+					    		return '.' + obj.version + '.' + $1;
+					    	});
+					    	data = data.replace('/' + obj.filename, '/' + replacedFilename);
+					    	console.log(obj.filename + '替换成了' + replacedFilename);
+					    });
+				    }
+				    
 
 				    console.log(filename + ': 相对地址替换中...');
 
@@ -390,28 +393,33 @@ var arrPath = ['pathJS', 'pathCSS', 'pathImages'];
 
 // get 存储的最新的递增的文件版本
 var pathSql = task.build.pathHTML + 'sql.txt';
-if (fs.existsSync(pathSql)) {
-	// sql文件数据的存储格式是：文件名:最新版本号，使用管道符进行分隔
-	// a.js:1|b.css:2
-	fs.readFile(pathSql, 'utf8', function(err, data) {
-		var arrData = data.split('|');
-		arrData.forEach(function(filename_version) {
-			var arrFn_vs = filename_version.split(':');
-			if (arrFn_vs.length == 2) {
-				// 补充静态资源的版本数据
-				storeStatic.forEach(function(obj) {
-					if (obj.filename == arrFn_vs[0]) {
-						obj.version = arrFn_vs[1];
-					}
-				});
-			}
+if (storeStatic.length) {
+	if (fs.existsSync(pathSql)) {
+		// sql文件数据的存储格式是：文件名:最新版本号，使用管道符进行分隔
+		// a.js:1|b.css:2
+		fs.readFile(pathSql, 'utf8', function(err, data) {
+			var arrData = data.split('|');
+			arrData.forEach(function(filename_version) {
+				var arrFn_vs = filename_version.split(':');
+				if (arrFn_vs.length == 2) {
+					// 补充静态资源的版本数据
+					storeStatic.forEach(function(obj) {
+						if (obj.filename == arrFn_vs[0]) {
+							obj.version = arrFn_vs[1];
+						}
+					});
+				}
+			});
+
+			// 检测文件是否有变更
+			funFileIsChanged();
 		});
+	} else {
+		console.log('没有找到sql.txt，首次编译，JS/CSS认为最新');
 
-		// 检测文件是否有变更
 		funFileIsChanged();
-	});
+	}
 } else {
-	console.log('没有找到sql.txt，首次编译，JS/CSS认为最新');
+	// 如果没有外联的js, css
 
-	funFileIsChanged();
 }
