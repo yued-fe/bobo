@@ -227,15 +227,18 @@ var funFileIsChanged = function() {
 				        throw err;
 				    }
 
-				    console.log(filename + ': css/js文件名替换中...');
+				    if (storeStatic.length) {
+				    	console.log(filename + ': css/js文件名替换中...');
 
-				    storeStatic.forEach(function(obj) {
-			    		var replacedFilename = obj.filename.replace(/\.(js|css)$/, function(matchs, $1) {
-				    		return '.' + obj.version + '.' + $1;
-				    	});
-				    	data = data.replace('/' + obj.filename, '/' + replacedFilename);
-				    	console.log(obj.filename + '替换成了' + replacedFilename);
-				    });
+					    storeStatic.forEach(function(obj) {
+				    		var replacedFilename = obj.filename.replace(/\.(js|css)$/, function(matchs, $1) {
+					    		return '.' + obj.version + '.' + $1;
+					    	});
+					    	data = data.replace('/' + obj.filename, '/' + replacedFilename);
+					    	console.log(obj.filename + '替换成了' + replacedFilename);
+					    });
+				    }
+				    
 
 				    console.log(filename + ': 相对地址替换中...');
 
@@ -244,11 +247,10 @@ var funFileIsChanged = function() {
 
 				    data = data.replace(reg, pathReplace[1]);
 
-				    console.log(filename + ': 正在写入微信分享和统计脚本...');
-
 				    var insertHTML = '';
 
 				    if (task.share.img_url) {
+				    	console.log(filename + ': 正在写入微信分享...');
 				    	// 微信分享
 				    	insertHTML = insertHTML + 
 				    	'<script src="http://qidian.gtimg.com/lbf/2.0.0/LBF.js"></script><script>' +
@@ -264,11 +266,13 @@ var funFileIsChanged = function() {
 
 				    // ta统计
 				    if (task.domain && task.ta[task.domain]) {
+				    	console.log(filename + ': 正在写入ta统计...');
 				    	insertHTML = insertHTML + '<script type="text/javascript" src="http://tajs.qq.com/stats?sId='+ task.ta[task.domain] +'" charset="UTF-8"></script>';
 				    }
 
 				    // pingjs
 				    if (task.pingjs) {
+				    	console.log(filename + ': 正在写入pingjs统计...');
 				    	insertHTML = insertHTML + '<script src="http://pingjs.qq.com/ping.js"></script><script>if(typeof(pgvMain) == "function"){  pgvMain(); }</script>'
 				    }
 
@@ -315,19 +319,34 @@ var funFileIsChanged = function() {
 	});
 };
 
-
+// 创建路径（如果不存在）
 var createPath = function(path) {
+	// 路径有下面这几种
+	// 1. /User/...      OS X
+	// 2. E:/mydir/...   window
+	// 3. a/b/...        下面3个相对地址，与系统无关
+	// 4. ./a/b/...
+	// 5. ../../a/b/...  
+
 	var pathHTML = '.';
 	if (path.slice(0,1) == '/') {
 		pathHTML = '/';
+	} else if (/:/.test(path)) {
+		pathHTML = '';
 	}
-	
+
 	path.split('/').forEach(function(filename) {
 		if (filename) {
-			pathHTML = pathHTML + '/' + filename;
-			if(!fs.existsSync(pathHTML)) {
-				console.log('路径' + pathHTML + '不存在，新建之');
-				fs.mkdirSync(pathHTML);
+			// 如果是数据盘地址，忽略
+			if (/:/.test(filename) == false) {
+				pathHTML = pathHTML + '/' + filename;
+				// 如果文件不存在
+				if(!fs.existsSync(pathHTML)) {
+					console.log('路径' + pathHTML + '不存在，新建之');
+					fs.mkdirSync(pathHTML);
+				}
+			} else {
+				pathHTML = filename;
 			}
 		}
 	});
@@ -390,28 +409,33 @@ var arrPath = ['pathJS', 'pathCSS', 'pathImages'];
 
 // get 存储的最新的递增的文件版本
 var pathSql = task.build.pathHTML + 'sql.txt';
-if (fs.existsSync(pathSql)) {
-	// sql文件数据的存储格式是：文件名:最新版本号，使用管道符进行分隔
-	// a.js:1|b.css:2
-	fs.readFile(pathSql, 'utf8', function(err, data) {
-		var arrData = data.split('|');
-		arrData.forEach(function(filename_version) {
-			var arrFn_vs = filename_version.split(':');
-			if (arrFn_vs.length == 2) {
-				// 补充静态资源的版本数据
-				storeStatic.forEach(function(obj) {
-					if (obj.filename == arrFn_vs[0]) {
-						obj.version = arrFn_vs[1];
-					}
-				});
-			}
+if (storeStatic.length) {
+	if (fs.existsSync(pathSql)) {
+		// sql文件数据的存储格式是：文件名:最新版本号，使用管道符进行分隔
+		// a.js:1|b.css:2
+		fs.readFile(pathSql, 'utf8', function(err, data) {
+			var arrData = data.split('|');
+			arrData.forEach(function(filename_version) {
+				var arrFn_vs = filename_version.split(':');
+				if (arrFn_vs.length == 2) {
+					// 补充静态资源的版本数据
+					storeStatic.forEach(function(obj) {
+						if (obj.filename == arrFn_vs[0]) {
+							obj.version = arrFn_vs[1];
+						}
+					});
+				}
+			});
+
+			// 检测文件是否有变更
+			funFileIsChanged();
 		});
+	} else {
+		console.log('没有找到sql.txt，首次编译，JS/CSS认为最新');
 
-		// 检测文件是否有变更
 		funFileIsChanged();
-	});
+	}
 } else {
-	console.log('没有找到sql.txt，首次编译，JS/CSS认为最新');
-
-	funFileIsChanged();
+	// 如果没有外联的js, css
+	funHTMLbuild();
 }
