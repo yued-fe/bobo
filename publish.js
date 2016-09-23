@@ -247,11 +247,10 @@ var funFileIsChanged = function() {
 
 				    data = data.replace(reg, pathReplace[1]);
 
-				    console.log(filename + ': 正在写入微信分享和统计脚本...');
-
 				    var insertHTML = '';
 
 				    if (task.share.img_url) {
+				    	console.log(filename + ': 正在写入微信分享...');
 				    	// 微信分享
 				    	insertHTML = insertHTML + 
 				    	'<script src="http://qidian.gtimg.com/lbf/2.0.0/LBF.js"></script><script>' +
@@ -267,11 +266,13 @@ var funFileIsChanged = function() {
 
 				    // ta统计
 				    if (task.domain && task.ta[task.domain]) {
+				    	console.log(filename + ': 正在写入ta统计...');
 				    	insertHTML = insertHTML + '<script type="text/javascript" src="http://tajs.qq.com/stats?sId='+ task.ta[task.domain] +'" charset="UTF-8"></script>';
 				    }
 
 				    // pingjs
 				    if (task.pingjs) {
+				    	console.log(filename + ': 正在写入pingjs统计...');
 				    	insertHTML = insertHTML + '<script src="http://pingjs.qq.com/ping.js"></script><script>if(typeof(pgvMain) == "function"){  pgvMain(); }</script>'
 				    }
 
@@ -318,19 +319,34 @@ var funFileIsChanged = function() {
 	});
 };
 
-
+// 创建路径（如果不存在）
 var createPath = function(path) {
+	// 路径有下面这几种
+	// 1. /User/...      OS X
+	// 2. E:/mydir/...   window
+	// 3. a/b/...        下面3个相对地址，与系统无关
+	// 4. ./a/b/...
+	// 5. ../../a/b/...  
+
 	var pathHTML = '.';
 	if (path.slice(0,1) == '/') {
 		pathHTML = '/';
+	} else if (/:/.test(path)) {
+		pathHTML = '';
 	}
-	
+
 	path.split('/').forEach(function(filename) {
 		if (filename) {
-			pathHTML = pathHTML + '/' + filename;
-			if(!fs.existsSync(pathHTML)) {
-				console.log('路径' + pathHTML + '不存在，新建之');
-				fs.mkdirSync(pathHTML);
+			// 如果是数据盘地址，忽略
+			if (/:/.test(filename) == false) {
+				pathHTML = pathHTML + '/' + filename;
+				// 如果文件不存在
+				if(!fs.existsSync(pathHTML)) {
+					console.log('路径' + pathHTML + '不存在，新建之');
+					fs.mkdirSync(pathHTML);
+				}
+			} else {
+				pathHTML = filename;
 			}
 		}
 	});
