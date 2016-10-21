@@ -1,13 +1,13 @@
 ﻿{
 	"server":  {
-		"port": "2016"
+		"port": "2017"
 	},
 	"theme": {
 		"pathHTML": "./src/",
-		"pathJS": "./src/src/js/",
+		"pathJS": "./src/js/",
 		"pathCSS": "./src/css/",
 		"pathImages": "./src/images/",
-		"arrFile": ["style.css"]
+		"arrFile": ["style.css", "test.css"]
 	},
 	"build": {
 		"pathHTML": "build/"
@@ -18,7 +18,7 @@
 		"js": "./svn/js/",
 		"images": "./svn/images/"
 	},
-	"pathReplace": ["./", "https://qidian.gtimg.com/acts/2016/000000/"],
+	"pathReplace": ["./", "http://localhost:2017/svn/"],
 	"share": {
 		"img_url": "",
 	    "desc": "微信分享描述",
@@ -32,6 +32,11 @@
 	},
 	"domain": "acts.qidian.com",
 	"pingjs": true,
+	"compress": {
+		"html": true,
+		"className": true,
+		"classIgnore": ["active", "checked", "disabled", "selected", "reverse"]
+	},
 
 
 	"comment": "pathReplace是本地HTML页面上静态资源的替换规则，share表示微信分享，img_url为线上绝对地址图片，如果img_url缺省，则不使用微信分享；domain表示活动页使用的域名，会使用对应的ta统计代码，如果缺省，就不使用ta统计；pingjs表示是否使用基础统计（PV、UV）等"

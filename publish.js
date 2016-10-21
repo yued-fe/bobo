@@ -93,6 +93,63 @@ var svn = task.svn;
 	}
 });
 
+// 类名压缩递增方法
+var seedClassName = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
+var indexClassName = 0;
+var getClassName = function() {
+	var length = seedClassName.length;
+
+	var left = indexClassName % length, loop = Math.floor(indexClassName / length), repeat = loop % length;
+
+	var className = '';
+
+	var char1 = seedClassName[repeat], char2 = seedClassName[left];
+
+	if (loop >= length) {
+		char1 = char1.toUpperCase();
+
+	} 
+	if (loop >= length * 2) {
+		char2 = char1.toUpperCase();
+	}
+	if (loop >= length * 3) {
+		console.log('超出2027数目限制，增加数字支持');
+		char2 = char2 + (indexClassName - 2027);
+	}
+
+	indexClassName++;
+
+	return char1 + char2;
+};
+
+// 类名压缩名称映射对象
+var hashClassName = {};
+
+// 类名替换方法
+// 
+var arrClassNameIgnore = config.compress.classIgnore || [];
+var fnCSSclassNameReplace = function(data) {
+	if (config.compress.className == true) {
+		console.log('CSS中压缩类名缓存中...');
+		return data.replace(/\.[a-z]+(?:\-\w+)*/gi, function(matchs) {
+			matchs = matchs.replace('.', '');
+
+			//console.log(matchs);
+
+			if (hashClassName[matchs]) {
+				return '.' + hashClassName[matchs];
+			} else if (arrClassNameIgnore.indexOf(matchs) === -1) {
+				var shortName = getClassName();
+				hashClassName[matchs] = shortName;
+				return '.' + shortName;
+			}
+			return '.' + matchs;
+		});
+	} else {
+		return data;
+	}
+};
+
 
 // 静态资源版本递增的逻辑实现
 // 首先，所有JS和CSS进入storeStatic进行统一的管理
@@ -124,9 +181,9 @@ var funFileIsChanged = function() {
 			pathVersion = task.theme.pathJS + obj.filename.replace('.js', '.' + obj.version + '.js');
 		}
 
-		if (fs.readFileSync(pathOrigin, {
+		if (fnCSSclassNameReplace(fs.readFileSync(pathOrigin, {
 	    	encoding: 'utf8'
-	    }) != fs.readFileSync(pathVersion, {
+	    })) != fs.readFileSync(pathVersion, {
 	    	encoding: 'utf8'
 	    })) {
 	    	obj.isModify = true;
@@ -141,6 +198,7 @@ var funFileIsChanged = function() {
 	var step = function() {
 		var obj = storeStatic[createIndex];
 
+		// 不使用循环是为了保证顺序
 		var next = function() {
 			createIndex++;
 			if (createIndex >= createLength) {
@@ -175,7 +233,12 @@ var funFileIsChanged = function() {
 
 			// 如果文件有修改
 			// 在同目录下创建，同时SVN复制一份
-			fs.readFile(pathOrigin, function(err, data) {
+			fs.readFile(pathOrigin, 'utf8', function(err, data) {
+				// 类名压缩CSS处理
+				if (/css$/.test(obj.filename)) {
+					data = fnCSSclassNameReplace(data);
+				}
+
 				// 以新名称重写CSS文件
 				fs.writeFile(pathVersion, data, function() {
 					console.log(pathVersion.split('/').slice(-1).join('') + '创建成功！');
@@ -286,32 +349,49 @@ var funFileIsChanged = function() {
 						fs.mkdirSync(dirPublic);
 					}
 
+					// 类名压缩
+					if (config.compress.className == true) {
+						console.log(filename + ': 类名替换中...');
+						data = data.replace(/class="(.*?)"/g, function(matchs, $1) {
+							//console.log($1);
+							return 'class="' + $1.split(' ').map(function(className) {
+								if (hashClassName[className]) {
+									return hashClassName[className];
+								}
+								return className;
+							}).join(' ') + '"';
+						})
+					}
+
 				    fs.writeFile(dirPublic + '/' + filename, data, function() {
 				        console.log(filename + ': 生成成功，文件存放于：' + dirPublic + '/' + filename);
 
-				        console.log(filename + ': 开始创建压缩版本');
+				        if (config.compress.html) {
+				        	console.log(filename + ': 开始创建压缩版本');
 
-				        var minidata = minify(data, {
-					    	removeComments: true,
-					    	collapseWhitespace: true,
-					    	minifyJS:true, 
-					    	minifyCSS:true
-					    });
+					        var minidata = minify(data, {
+						    	removeComments: true,
+						    	collapseWhitespace: true,
+						    	minifyJS:true, 
+						    	minifyCSS:true
+						    });
 
-				        // 根目录最终发布HTML生成
-					    fs.writeFile(task.build.pathHTML + filename, minidata, function() {
-					        console.log(filename + ': 压缩成功，文件存放于：' + task.build.pathHTML + filename);
-					        // svn目录转移
-					        if (task.svn.html) {
-					        	fs.writeFile(task.svn.html + filename, minidata, function() {
-					        		console.log('成功到SVN目录：' + task.svn.html + filename);
-					        		
-					        		console.log('任务完成！\n\n');
-					        	});
-					        } else {
-					        	console.log('任务完成！\n\n');
-					        }				        
-					    });
+					        // 根目录最终发布HTML生成
+						    fs.writeFile(task.build.pathHTML + filename, minidata, function() {
+						        console.log(filename + ': 压缩成功，文件存放于：' + task.build.pathHTML + filename);
+						        // svn目录转移
+						        if (task.svn.html) {
+						        	fs.writeFile(task.svn.html + filename, minidata, function() {
+						        		console.log('成功到SVN目录：' + task.svn.html + filename);
+						        		
+						        		console.log('任务完成！\n\n');
+						        	});
+						        } else {
+						        	console.log('任务完成！\n\n');
+						        }				        
+						    });
+				        }
+				       
 				    });
 				});
 	    	}
