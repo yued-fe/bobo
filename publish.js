@@ -438,6 +438,9 @@ var createPath = function(path) {
  * @param{ String } 复制到指定的目录
  */
 var copy = function( src, dst ){
+	if (!fs.existsSync(src)) {
+		return;
+	}
     // 读取目录中的所有文件/目录
     fs.readdir( src, function( err, paths ){
         if( err ){
