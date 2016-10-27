@@ -131,7 +131,7 @@ var arrClassNameIgnore = config.compress.classIgnore || [];
 var fnCSSclassNameReplace = function(data) {
 	if (config.compress.className == true) {
 		console.log('CSS中压缩类名缓存中...');
-		return data.replace(/\.[a-z]+(?:\-\w+)*/gi, function(matchs) {
+		return data.replace(/\.[a-z][a-z0-9]*(?:\-\w+)*/gi, function(matchs) {
 			matchs = matchs.replace('.', '');
 
 			//console.log(matchs);
@@ -176,19 +176,28 @@ var funFileIsChanged = function() {
 		if (/css$/.test(obj.filename)) {
 			pathOrigin = task.theme.pathCSS + obj.filename;
 			pathVersion = task.theme.pathCSS + obj.filename.replace('.css', '.' + obj.version + '.css');
+
+			if (fnCSSclassNameReplace(fs.readFileSync(pathOrigin, {
+		    	encoding: 'utf8'
+		    })) != fs.readFileSync(pathVersion, {
+		    	encoding: 'utf8'
+		    })) {
+		    	obj.isModify = true;
+		    	obj.version = +obj.version + 1;
+		    }
 		} else if (/js$/.test(obj.filename)) {
 			pathOrigin = task.theme.pathJS + obj.filename;
 			pathVersion = task.theme.pathJS + obj.filename.replace('.js', '.' + obj.version + '.js');
-		}
 
-		if (fnCSSclassNameReplace(fs.readFileSync(pathOrigin, {
-	    	encoding: 'utf8'
-	    })) != fs.readFileSync(pathVersion, {
-	    	encoding: 'utf8'
-	    })) {
-	    	obj.isModify = true;
-	    	obj.version = +obj.version + 1;
-	    }
+			if (fs.readFileSync(pathOrigin, {
+		    	encoding: 'utf8'
+		    }) != fs.readFileSync(pathVersion, {
+		    	encoding: 'utf8'
+		    })) {
+		    	obj.isModify = true;
+		    	obj.version = +obj.version + 1;
+		    }
+		}	
 	});
 
 	funCreateNewfile();

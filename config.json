@@ -35,7 +35,7 @@
 	"compress": {
 		"html": true,
 		"className": true,
-		"classIgnore": ["active", "checked", "disabled", "selected", "reverse"]
+		"classIgnore": ["active", "checked", "disabled", "selected", "reverse", "jpg", "png", "svg", "gif"]
 	},
 
 

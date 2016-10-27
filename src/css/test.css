@@ -161,7 +161,7 @@ body,
   height: 1.125rem;
   margin: auto;
   color: transparent;
-  background: url("/qdm/img/logo-qdm.svg");
+  background: url("../images/logo-qdm.svg");
   background-size: 100%;
 }
 
@@ -238,6 +238,9 @@ a.icon-more.active::before {
   transform: translateY(-.3125rem) rotate(-45deg);
 }
 
+.module2 {
+  color: red;
+}
 .module-header {
   height: 1.75rem;
   padding: 0 1rem;
