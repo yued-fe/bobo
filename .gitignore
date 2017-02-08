@@ -29,6 +29,7 @@ local.properties
 .buildpath
 
 node_modules/
+config_svn.json
 
 #################
 ## Visual Studio
