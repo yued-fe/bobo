@@ -33,7 +33,7 @@ config.json中的配置参数
 2. <code>theme</code>为开发时候的静态资源目录路径，其中最重要的是<code>arrFile</code>，数组，值为需要递增和类名压缩的CSS或者JS的文件名，例如：
 	<pre>"arrFile": ["style.css", "common.js"]</pre>
 3. <code>build</code>为发布时候编译出来新的HTML页面和静态资源目录，一般情况下无需重新设置；
-4. <code>svn</code>为需要上线或者同步的SVN或者Git文件夹地址，如果文件夹不存在，波波会自动创建之~，支持相对地址和绝对地址，兼容windows和OS X系统；
+4. <code>svn</code>为需要上线或者同步的SVN或者Git文件夹地址，如果文件夹不存在，波波会自动创建之~，支持相对地址和绝对地址，兼容windows和OS X系统。注意：现在开始SVN参数独立在config_svn.json文件中配置，因为不同开发人员的SVN目录地址是不一样的；
 5. <code>pathReplace</code>为替换规则，最终的HTML页面中的相对地址会被替换成线上的绝对地址，默认的绝对地址是localhost，主要是为了本地演示方便；
 6. <code>share</code>为微信分享的一些参数，<code>img_url</code>为线上绝对地址图片，如果<code>img_url</code>缺省，则不使用微信分享；
 7. <code>ta</code>为统计代码，根据不同的域名会放置不同的统计<code>id</code>；
