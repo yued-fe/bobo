@@ -1,0 +1,8 @@
+﻿{
+	"svn": {
+		"html": "./svn/html/",
+		"css": "./svn/css/",
+		"js": "./svn/js/",
+		"images": "./svn/images/"
+	}
+}

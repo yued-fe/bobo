@@ -72,19 +72,24 @@ var minify = require('html-minifier').minify;
 
 // 首先，加载配置数据
 var config = require('./config.json');
-
+var configSVN = require('./config_svn.json');
 
 // 首先，当前任务
 console.log('\n开始任务');
 
 var task = config;
+var taskSVN = configSVN;
 
 // svn目录
-var svn = task.svn;
+var svn = configSVN.svn;
 
 // 自动末尾加斜杠
 ['theme', 'build', 'svn'].forEach(function(key) {
 	var data = task[key];
+	if (key == 'svn') {
+		data = taskSVN[key];
+	}
+
 	for (var keyPath in data) {
 		if (data[keyPath] && typeof data[keyPath] == 'string' && data[keyPath].slice(-1) !== '/') {
 			console.log(key + '.' + keyPath + '路径应以/结尾，已补全');
@@ -230,13 +235,13 @@ var funFileIsChanged = function() {
 				pathVersion = pathOrigin.replace('.css', '.' + obj.version + '.css');
 
 				// svn地址
-				svnOrigin = task.svn.css + obj.filename;
+				svnOrigin = taskSVN.svn.css + obj.filename;
 				svnVersion = svnOrigin.replace('.css', '.' + obj.version + '.css');
 			} else if (/js$/.test(obj.filename)) {
 				pathOrigin = task.theme.pathJS + obj.filename;
 				pathVersion = pathOrigin.replace('.js', '.' + obj.version + '.js');
 				// svn地址
-				svnOrigin = task.svn.js + obj.filename;
+				svnOrigin = taskSVN.svn.js + obj.filename;
 				svnVersion = svnOrigin.replace('.js', '.' + obj.version + '.js');
 			}
 
@@ -389,9 +394,9 @@ var funFileIsChanged = function() {
 						    fs.writeFile(task.build.pathHTML + filename, minidata, function() {
 						        console.log(filename + ': 压缩成功，文件存放于：' + task.build.pathHTML + filename);
 						        // svn目录转移
-						        if (task.svn.html) {
-						        	fs.writeFile(task.svn.html + filename, minidata, function() {
-						        		console.log('成功到SVN目录：' + task.svn.html + filename);
+						        if (taskSVN.svn.html) {
+						        	fs.writeFile(taskSVN.svn.html + filename, minidata, function() {
+						        		console.log('成功到SVN目录：' + taskSVN.svn.html + filename);
 						        		
 						        		console.log('任务完成！\n\n');
 						        	});
@@ -446,34 +451,38 @@ var createPath = function(path) {
  * @param{ String } 需要复制的目录
  * @param{ String } 复制到指定的目录
  */
-var copy = function( src, dst ){
+var copy = function (src, dst) {
 	if (!fs.existsSync(src)) {
 		return;
 	}
     // 读取目录中的所有文件/目录
-    fs.readdir( src, function( err, paths ){
-        if( err ){
+    fs.readdir(src, function (err, paths) {
+        if (err) {
             throw err;
         }
 
-        paths.forEach(function( path ){
-            var _src = src +path,
+        paths.forEach(function (path) {
+            var _src = src + path,
                 _dst = dst + path,
                 readable, writable;        
 
-            stat( _src, function( err, st ){
-                if( err ){
+            stat(_src, function (err, st) {
+                if (err){
                     throw err;
                 }
 
                 // 判断是否为文件
-                if( st.isFile() ){
+                if (st.isFile()) {
                     // 创建读取流
-                    readable = fs.createReadStream( _src );
+                    readable = fs.createReadStream(_src);
                     // 创建写入流
-                    writable = fs.createWriteStream( _dst );   
+                    writable = fs.createWriteStream(_dst);   
                     // 通过管道来传输流
-                    readable.pipe( writable );
+                    readable.pipe(writable);
+                } else {
+                	// 作为文件夹处理
+                	createPath(_dst);
+                	copy(_src + '/', _dst + '/');
                 }
             });
         });

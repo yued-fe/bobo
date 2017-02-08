@@ -12,12 +12,6 @@
 	"build": {
 		"pathHTML": "build/"
 	},
-	"svn": {
-		"html": "./svn/html/",
-		"css": "./svn/css/",
-		"js": "./svn/js/",
-		"images": "./svn/images/"
-	},
 	"pathReplace": ["./", "http://localhost:2017/svn/"],
 	"share": {
 		"img_url": "",
