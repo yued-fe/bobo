@@ -28,14 +28,15 @@ var minify = require('html-minifier').minify;
 
 // 下面是某活动配置示意：
 // 其中
-// pathReplace 是本地HTML页面上静态资源的替换规则，
+// pathReplace 是本地HTML页面上静态资源的替换规则，其中：
+//             example是示意，build是线上地址，public是本地检测类名压缩是否正常的地址
 // share       表示微信分享，如果img_url缺省，则不使用微信分享；
 // domain      表示活动页使用的域名，会使用对应的ta统计代码，如果缺省，就不使用ta统计；
 // pingjs      表示是否使用基础统计（PV、UV）等
 /*
-{
+config.json: {
 	"server":  {
-		"port": "2016"
+		"port": "2017"
 	},
 	"theme": {
 		"pathHTML": "./",
@@ -47,13 +48,11 @@ var minify = require('html-minifier').minify;
 	"build": {
 		"pathHTML": "build/"
 	},
-	"svn": {
-		"html": "./svn/html/",
-		"css": "./svn/css/",
-		"js": "./svn/js/",
-		"images": "./svn/images/"
+	"pathReplace": {
+		"example": ["./", "//qidian.gtimg.com/acts/2017/tapdid/"],
+		"build": ["./", "http://localhost:2017/svn/"],
+		"public": ["./", "../../src/"],
 	},
-	"pathReplace": ["./", "https://qidian.gtimg.com/acts/2016/5660165/"],
 	"share": {
 		"img_url": "",
 	    "desc": "描述",
@@ -67,6 +66,15 @@ var minify = require('html-minifier').minify;
 	},
 	"domain": "acts.qidian.com",
 	"pingjs": true
+}
+
+config_svn.json: {
+	"svn": {
+		"html": "./svn/html/",
+		"css": "./svn/css/",
+		"js": "./svn/js/",
+		"images": "./svn/images/"
+	}
 }
 */
 
@@ -315,14 +323,52 @@ var funFileIsChanged = function() {
 					    	console.log(obj.filename + '替换成了' + replacedFilename);
 					    });
 				    }
+
+				    // 类名压缩
+					if (config.compress.className == true) {
+						console.log(filename + ': 类名替换中...');
+						data = data.replace(/class="(.*?)"/g, function(matchs, $1) {
+							//console.log($1);
+							return 'class="' + $1.split(' ').map(function(className) {
+								if (hashClassName[className]) {
+									return hashClassName[className];
+								}
+								return className;
+							}).join(' ') + '"';
+						})
+					}
+
+				    // 这里build/public和build下HTML并联进行，之前是串联
+				    var pathReplace = task.pathReplace;
+				    // 先是public替换
+				    var pathReplacePublic = pathReplace.public;
+				    // build下index.html替换
+				    var pathReplaceBuild = pathReplace.build;
+
+				    // 数据也分开
+				    var dataPublic = data;
+
+				    // public下的HTML页面非压缩版本
+				    var dirPublic = task.build.pathHTML + 'public';
+				    if(!fs.existsSync(dirPublic)) {
+				    	console.log('public文件夹不存在，新建之');
+						fs.mkdirSync(dirPublic);
+					}
+
+				    // public/index.html相对地址替换
+				    console.log(dirPublic + '/' + filename + ': 相对地址更换中');
+				    var regPublic = new RegExp(pathReplacePublic[0].replace(/\./g, '\\.').replace(/\//g, '\\/'), 'g');
+				    dataPublic = dataPublic.replace(regPublic, pathReplacePublic[1]);
+
+				    // 写入public页面
+				    fs.writeFile(dirPublic + '/' + filename, dataPublic, function() {
+				        console.log(filename + ': 生成成功，文件存放于：' + dirPublic + '/' + filename);
+				    });
 				    
 
-				    console.log(filename + ': 相对地址替换中...');
-
-				    var pathReplace = task.pathReplace;
-				    var reg = new RegExp(pathReplace[0].replace(/\./g, '\\.').replace(/\//g, '\\/'), 'g');
-
-				    data = data.replace(reg, pathReplace[1]);
+				    // 下面是两位的分支，使用线上地址，写入统计，并压缩HTML
+				    var reg = new RegExp(pathReplaceBuild[0].replace(/\./g, '\\.').replace(/\//g, '\\/'), 'g');
+				    data = data.replace(reg, pathReplaceBuild[1]);
 
 				    var insertHTML = '';
 
@@ -356,57 +402,32 @@ var funFileIsChanged = function() {
 				    // 插入在页面底部
 				    data = data.replace('</body>', insertHTML + '</body>');
 
-				    // public下的HTML页面非压缩版本
-				    var dirPublic = task.build.pathHTML + 'public';
-				    if(!fs.existsSync(dirPublic)) {
-				    	console.log('public文件夹不存在，新建之');
-						fs.mkdirSync(dirPublic);
-					}
+				    // 开始压缩
+				    if (config.compress.html) {
+			        	console.log(filename + ': 开始创建压缩版本');
 
-					// 类名压缩
-					if (config.compress.className == true) {
-						console.log(filename + ': 类名替换中...');
-						data = data.replace(/class="(.*?)"/g, function(matchs, $1) {
-							//console.log($1);
-							return 'class="' + $1.split(' ').map(function(className) {
-								if (hashClassName[className]) {
-									return hashClassName[className];
-								}
-								return className;
-							}).join(' ') + '"';
-						})
-					}
+				        var minidata = minify(data, {
+					    	removeComments: true,
+					    	collapseWhitespace: true,
+					    	minifyJS:true, 
+					    	minifyCSS:true
+					    });
 
-				    fs.writeFile(dirPublic + '/' + filename, data, function() {
-				        console.log(filename + ': 生成成功，文件存放于：' + dirPublic + '/' + filename);
-
-				        if (config.compress.html) {
-				        	console.log(filename + ': 开始创建压缩版本');
-
-					        var minidata = minify(data, {
-						    	removeComments: true,
-						    	collapseWhitespace: true,
-						    	minifyJS:true, 
-						    	minifyCSS:true
-						    });
-
-					        // 根目录最终发布HTML生成
-						    fs.writeFile(task.build.pathHTML + filename, minidata, function() {
-						        console.log(filename + ': 压缩成功，文件存放于：' + task.build.pathHTML + filename);
-						        // svn目录转移
-						        if (taskSVN.svn.html) {
-						        	fs.writeFile(taskSVN.svn.html + filename, minidata, function() {
-						        		console.log('成功到SVN目录：' + taskSVN.svn.html + filename);
-						        		
-						        		console.log('任务完成！\n\n');
-						        	});
-						        } else {
-						        	console.log('任务完成！\n\n');
-						        }				        
-						    });
-				        }
-				       
-				    });
+				        // 根目录最终发布HTML生成
+					    fs.writeFile(task.build.pathHTML + filename, minidata, function() {
+					        console.log(filename + ': 压缩成功，文件存放于：' + task.build.pathHTML + filename);
+					        // svn目录转移
+					        if (taskSVN.svn.html) {
+					        	fs.writeFile(taskSVN.svn.html + filename, minidata, function() {
+					        		console.log('成功到SVN目录：' + taskSVN.svn.html + filename);
+					        		
+					        		console.log('任务完成！\n\n');
+					        	});
+					        } else {
+					        	console.log('任务完成！\n\n');
+					        }				        
+					    });
+			        }
 				});
 	    	}
 	    });

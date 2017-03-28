@@ -12,7 +12,11 @@
 	"build": {
 		"pathHTML": "build/"
 	},
-	"pathReplace": ["./", "http://localhost:2017/svn/"],
+	"pathReplace": {
+		"example": ["./", "//qidian.gtimg.com/acts/2017/tapdid/"],
+		"build": ["./", "http://localhost:2017/svn/"],
+		"public": ["./", "../../src/"]
+	},
 	"share": {
 		"img_url": "",
 	    "desc": "微信分享描述",
