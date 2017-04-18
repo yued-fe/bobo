@@ -18,10 +18,11 @@
 		"public": ["./", "../../src/"]
 	},
 	"share": {
-		"img_url": "",
-	    "desc": "微信分享描述",
-	    "title": "微信分享标题"
+		"img_url": "https://qidian.gtimg.com/acts/2017/5803057/images/share.jpg",
+	    "desc": "分享描述",
+	    "title": "分享标题"
 	},
+	"shareSelector": "#shareBtn",
 	"ta": {
 		"acts.book.qq.com": "500148454",
 		"acts.qidian.com": "500148453"

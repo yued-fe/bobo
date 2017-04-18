@@ -35,11 +35,13 @@ config.json中的配置参数
 3. <code>build</code>为发布时候编译出来新的HTML页面和静态资源目录，一般情况下无需重新设置；
 4. <del><code>svn</code>为需要上线或者同步的SVN或者Git文件夹地址，如果文件夹不存在，波波会自动创建之~，支持相对地址和绝对地址，兼容windows和OS X系统。</del><strong>注意：现在开始SVN参数独立在config_svn.</strong>json文件中配置，因为不同开发人员的SVN目录地址是不一样的；
 5. <code>pathReplace</code>为替换规则，最终的HTML页面中的相对地址会被替换成线上的绝对地址，默认的绝对地址是localhost，主要是为了本地演示方便。目前分'build', 'public'两个选项，原来/build/public/目录下的index.html也是使用线上地址，发现意义不大，先改为使用本地相对路径地址，可以用来方便测试类名压缩功能是否正常；
-6. <code>share</code>为微信分享的一些参数，<code>img_url</code>为线上绝对地址图片，如果<code>img_url</code>缺省，则不使用微信分享；
-7. <code>ta</code>为统计代码，根据不同的域名会放置不同的统计<code>id</code>；
-8. <code>domain</code>当前活动使用的域名，如果使用的域名不在默认数据之列，请自己添加（含对应id），例如yuewen.com；
-9. <code>pingjs</code>表示是否使用基础统计（PV、UV）等"，默认<code>true</code>，表示开启统计；
-10. <code>compress</code>为压缩需要的一些配置参数。其中<code>html</code>表示是否开启HTML压缩，默认开启；<code>className</code>表示是否开启类名压缩，默认开启；<code>classIgnore</code>表示不参与压缩的类名们，格式为数组。
+6. <code>share</code>为分享的一些参数，<code>img_url</code>为线上绝对地址图片，如果<code>img_url</code>缺省，则不使用分享；
+7. <code>shareSelector</code>为页面上分享按钮的选择器，主要给起点客户端的IOS和Android使用
+8. <code>ta</code>为统计代码，根据不同的域名会放置不同的统计<code>id</code>；
+9. <code>domain</code>当前活动使用的域名，如果使用的域名不在默认数据之列，请自己添加（含对应id），例如yuewen.com；
+10. <code>pingjs</code>表示是否使用基础统计（PV、UV）等"，默认<code>true</code>，表示开启统计；
+11. <code>protocol</code>表示分享，统计等JS使用的协议。默认是<code>http:</code>，如果是<code>https</code>协议，可以设为<code>https:</code>，也可以为空，表示使用当前URL地址协议，唯一问题是生成的页面直接点击预览地址为404，因为会使用<code>file:</code>协议。
+12. <code>compress</code>为压缩需要的一些配置参数。其中<code>html</code>表示是否开启HTML压缩，默认开启；<code>className</code>表示是否开启类名压缩，默认开启；<code>classIgnore</code>表示不参与压缩的类名们，格式为数组。
 
 
 config_svn.json中的配置参数

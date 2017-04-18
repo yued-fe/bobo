@@ -116,14 +116,14 @@ var getClassName = function() {
 
 	var className = '';
 
-	var char1 = seedClassName[repeat], char2 = seedClassName[left];
+	var char1 = seedClassName[repeat].toUpperCase(), char2 = seedClassName[left].toUpperCase();
 
 	if (loop >= length) {
-		char1 = char1.toUpperCase();
+		char1 = char1.toLowerCase();
 
 	} 
 	if (loop >= length * 2) {
-		char2 = char1.toUpperCase();
+		char2 = char1.toLowerCase();
 	}
 	if (loop >= length * 3) {
 		console.log('超出2027数目限制，增加数字支持');
@@ -373,17 +373,23 @@ var funFileIsChanged = function() {
 				    var insertHTML = '';
 
 				    if (task.share.img_url) {
-				    	console.log(filename + ': 正在写入微信分享...');
+				    	console.log(filename + ': 正在写入分享...');
 				    	// 微信分享
 				    	insertHTML = insertHTML + 
-				    	'<script src="'+ task.protocol +'//qidian.gtimg.com/lbf/2.0.0/LBF.js"></script><script>' +
+				    	'<script src="'+ task.protocol +'//qidian.gtimg.com/acts/ywurl/ywurl1.0.1.js"></script><script>' +
 				    	'var config_share = {\
     img_url: "'+ task.share.img_url +'",\
     link: location.href,\
     desc: "'+ task.share.desc +'",\
     title: "'+ task.share.title +'"\
 };' +	
-						'LBF.use(["qidian.wxShare"],function(weixin){weixin.setWeiXinShareConfig("qidianzhongwenwang", config_share.title, location.href,config_share.img_url,config_share.desc);});' +
+						'config_share.img=config_share.img_url;config_share.url=config_share.link;\
+						var eleShareBtns = document.querySelectorAll("'+ task.shareSelector +'");\
+if(eleShareBtns.length && (ywurl.uA == ywurl.platforms.iosApp || ywurl.uA == ywurl.platforms.androidApp)){\
+	[].slice.call(eleShareBtns).forEach(function(ele) {\
+		ele.addEventListener("click", function () { ywurl.yuewenShare.share(config_share); });\
+	});\
+}else{ ywurl.yuewenShare.setShareConfig(config_share); }' +
 						'</script>';
 				    }
 
