@@ -23,13 +23,12 @@
 	    "title": "微信分享标题"
 	},
 	"ta": {
-		"activity.book.qq.com": "57186307",
-		"activity.qidian.com": "57186280",
-		"acts.book.qq.com": "57186204",
-		"acts.qidian.com": "57186166"
+		"acts.book.qq.com": "500148454",
+		"acts.qidian.com": "500148453"
 	},
 	"domain": "acts.qidian.com",
 	"pingjs": true,
+	"protocol": "http:",
 	"compress": {
 		"html": true,
 		"className": true,

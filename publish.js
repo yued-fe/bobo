@@ -49,7 +49,9 @@ config.json: {
 		"pathHTML": "build/"
 	},
 	"pathReplace": {
+		// example是build使用的示意，起注释作用
 		"example": ["./", "//qidian.gtimg.com/acts/2017/tapdid/"],
+
 		"build": ["./", "http://localhost:2017/svn/"],
 		"public": ["./", "../../src/"],
 	},
@@ -59,10 +61,8 @@ config.json: {
 	    "title": "标题"
 	},
 	"ta": {
-		"activity.book.qq.com": "57186307",
-		"activity.qidian.com": "57186280",
-		"acts.book.qq.com": "57186204",
-		"acts.qidian.com": "57186166"
+		"acts.book.qq.com": "500148454",
+		"acts.qidian.com": "500148453"
 	},
 	"domain": "acts.qidian.com",
 	"pingjs": true
@@ -376,7 +376,7 @@ var funFileIsChanged = function() {
 				    	console.log(filename + ': 正在写入微信分享...');
 				    	// 微信分享
 				    	insertHTML = insertHTML + 
-				    	'<script src="http://qidian.gtimg.com/lbf/2.0.0/LBF.js"></script><script>' +
+				    	'<script src="'+ task.protocol +'//qidian.gtimg.com/lbf/2.0.0/LBF.js"></script><script>' +
 				    	'var config_share = {\
     img_url: "'+ task.share.img_url +'",\
     link: location.href,\
@@ -390,13 +390,13 @@ var funFileIsChanged = function() {
 				    // ta统计
 				    if (task.domain && task.ta[task.domain]) {
 				    	console.log(filename + ': 正在写入ta统计...');
-				    	insertHTML = insertHTML + '<script type="text/javascript" src="http://tajs.qq.com/stats?sId='+ task.ta[task.domain] +'" charset="UTF-8"></script>';
+				    	insertHTML = insertHTML + '<script>var _mtac = {};(function() {var mta = document.createElement("script");mta.src = "'+ task.protocol +'//pingjs.qq.com/h5/stats.js?v2.0.4";mta.setAttribute("name", "MTAH5");mta.setAttribute("sid", "'+ task.ta[task.domain] +'");var s = document.getElementsByTagName("script")[0];s.parentNode.insertBefore(mta, s);})();</script>';
 				    }
 
 				    // pingjs
 				    if (task.pingjs) {
 				    	console.log(filename + ': 正在写入pingjs统计...');
-				    	insertHTML = insertHTML + '<script src="http://pingjs.qq.com/ping.js"></script><script>if(typeof(pgvMain) == "function"){  pgvMain(); }</script>'
+				    	insertHTML = insertHTML + '<script src="'+ task.protocol +'//pingjs.qq.com/ping.js"></script><script>if(typeof(pgvMain) == "function"){  pgvMain(); }</script>';
 				    }
 
 				    // 插入在页面底部
