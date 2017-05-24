@@ -32,7 +32,6 @@ var minify = require('html-minifier').minify;
 //             example是示意，build是线上地址，public是本地检测类名压缩是否正常的地址
 // share       表示微信分享，如果img_url缺省，则不使用微信分享；
 // domain      表示活动页使用的域名，会使用对应的ta统计代码，如果缺省，就不使用ta统计；
-// pingjs      表示是否使用基础统计（PV、UV）等
 /*
 config.json: {
 	"server":  {
@@ -61,11 +60,12 @@ config.json: {
 	    "title": "标题"
 	},
 	"ta": {
+		"activity.book.qq.com": "500438403",
+        "activity.qidian.com": "500438401",
 		"acts.book.qq.com": "500148454",
 		"acts.qidian.com": "500148453"
 	},
-	"domain": "acts.qidian.com",
-	"pingjs": true
+	"domain": "acts.qidian.com"
 }
 
 config_svn.json: {
@@ -397,12 +397,6 @@ if(eleShareBtns.length && (ywurl.uA == ywurl.platforms.iosApp || ywurl.uA == ywu
 				    if (task.domain && task.ta[task.domain]) {
 				    	console.log(filename + ': 正在写入ta统计...');
 				    	insertHTML = insertHTML + '<script>var _mtac = {};(function() {var mta = document.createElement("script");mta.src = "'+ task.protocol +'//pingjs.qq.com/h5/stats.js?v2.0.4";mta.setAttribute("name", "MTAH5");mta.setAttribute("sid", "'+ task.ta[task.domain] +'");var s = document.getElementsByTagName("script")[0];s.parentNode.insertBefore(mta, s);})();</script>';
-				    }
-
-				    // pingjs
-				    if (task.pingjs) {
-				    	console.log(filename + ': 正在写入pingjs统计...');
-				    	insertHTML = insertHTML + '<script src="'+ task.protocol +'//pingjs.qq.com/ping.js"></script><script>if(typeof(pgvMain) == "function"){  pgvMain(); }</script>';
 				    }
 
 				    // 插入在页面底部
